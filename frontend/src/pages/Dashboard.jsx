@@ -1,458 +1,918 @@
 import {
-  AppBar,
-  Toolbar,
-  Typography,
-  Button,
   Box,
+  Typography,
   Grid,
   Card,
   CardContent,
   TextField,
   MenuItem,
-  Container,
-  List,
-  ListItem,
-  Divider,
+  Button,
   Chip,
+  Avatar,
 } from "@mui/material";
 
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
-
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import PsychologyIcon from "@mui/icons-material/Psychology";
+import AssignmentIcon from "@mui/icons-material/Assignment";
+import StarIcon from "@mui/icons-material/Star";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
+
+
+import { useState } from "react";
 
 import API from "../api/axios";
 
-function Dashboard() {
-  const navigate = useNavigate();
+import StatCard from "../components/StatCard";
 
-  const [analytics, setAnalytics] = useState({
-    totalInterviews: 0,
-    averageScore: 0,
-    bestScore: 0,
-  });
 
-  const [questions, setQuestions] = useState([]);
 
-  const [interviewId, setInterviewId] = useState(null);
+function Dashboard(){
 
-  const [answers, setAnswers] = useState({});
 
-  const [results, setResults] = useState({});
 
-  const [loading, setLoading] = useState(false);
+const [formData,setFormData]=useState({
 
-  const [formData, setFormData] = useState({
-    role: "",
-    level: "",
-    techstack: "",
-  });
+role:"",
+level:"",
+techstack:""
 
-  // temporary chart data
-  const chartData = [
-    { name: "1", score: 5 },
-    { name: "2", score: 8 },
-    { name: "3", score: 6 },
-    { name: "4", score: 9 },
-  ];
+});
+const navigate = useNavigate();
 
-  // Fetch analytics
-  const fetchAnalytics = async () => {
-    try {
-      const res = await API.get("/analytics");
 
-      setAnalytics(res.data);
+const [questions,setQuestions]=useState([]);
 
-    } catch (error) {
-      console.log(error);
-    }
-  };
+const [loading,setLoading]=useState(false);
 
-  useEffect(() => {
-    fetchAnalytics();
-  }, []);
 
-  // Logout
-  const handleLogout = () => {
-    localStorage.removeItem("token");
 
-    navigate("/");
-  };
 
-  // Handle form
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+const handleChange=(e)=>{
 
-  // Generate Questions
-  const generateQuestions = async () => {
-    try {
-      setLoading(true);
 
-      const res = await API.post("/ai/questions", formData);
+setFormData({
 
-      setQuestions(res.data.questions);
+...formData,
 
-      setInterviewId(res.data.interview.id);
+[e.target.name]:e.target.value
 
-      setResults({});
+});
 
-      setAnswers({});
 
-      fetchAnalytics();
+};
 
-    } catch (error) {
-      console.log(error);
-
-      alert("Failed to generate questions");
-
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle answers
-  const handleAnswerChange = (index, value) => {
-    setAnswers({
-      ...answers,
-      [index]: value,
-    });
-  };
-
-  // Evaluate answer
-  const evaluateAnswer = async (question, answer, index) => {
-    try {
-      const res = await API.post("/ai/evaluate", {
-        interview_id: interviewId,
-        question,
-        answer,
-      });
-
-      setResults((prev) => ({
-        ...prev,
-        [index]: res.data.result,
-      }));
-
-      fetchAnalytics();
-
-    } catch (error) {
-      console.log(error);
-
-      alert("Evaluation failed");
-    }
-  };
-
-  return (
-    <Box sx={{ minHeight: "100vh", background: "#f4f6f8" }}>
-
-      {/* Navbar */}
-      <AppBar position="static">
-        <Toolbar>
-
-          <Typography
-            variant="h6"
-            sx={{ flexGrow: 1 }}
-          >
-            AI Interview Platform
-          </Typography>
-
-          <Button
-            color="inherit"
-            onClick={handleLogout}
-          >
-            Logout
-          </Button>
-
-        </Toolbar>
-      </AppBar>
-
-      <Container sx={{ mt: 5 }}>
-
-        {/* Analytics */}
-        <Grid container spacing={3}>
-
-          <Grid item xs={12} md={4}>
-            <Card sx={{ borderRadius: 4 }}>
-              <CardContent>
-
-                <Typography variant="h6">
-                  Total Interviews
-                </Typography>
-
-                <Typography
-                  variant="h3"
-                  fontWeight="bold"
-                >
-                  {analytics.totalInterviews}
-                </Typography>
-
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid item xs={12} md={4}>
-            <Card sx={{ borderRadius: 4 }}>
-              <CardContent>
-
-                <Typography variant="h6">
-                  Average Score
-                </Typography>
-
-                <Typography
-                  variant="h3"
-                  fontWeight="bold"
-                >
-                  {analytics.averageScore}
-                </Typography>
-
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid item xs={12} md={4}>
-            <Card sx={{ borderRadius: 4 }}>
-              <CardContent>
-
-                <Typography variant="h6">
-                  Best Score
-                </Typography>
-
-                <Typography
-                  variant="h3"
-                  fontWeight="bold"
-                >
-                  {analytics.bestScore}
-                </Typography>
-
-              </CardContent>
-            </Card>
-          </Grid>
-
-        </Grid>
-
-        {/* Generate Interview */}
-        <Card
-          sx={{
-            mt: 5,
-            borderRadius: 4,
-          }}
-        >
-          <CardContent>
-
-            <Typography
-              variant="h5"
-              fontWeight="bold"
-              mb={3}
-            >
-              Generate AI Interview
-            </Typography>
-
-            <Grid container spacing={2}>
-
-              <Grid item xs={12} md={4}>
-                <TextField
-                  fullWidth
-                  label="Role"
-                  name="role"
-                  onChange={handleChange}
-                />
-              </Grid>
-
-              <Grid item xs={12} md={4}>
-                <TextField
-                  select
-                  fullWidth
-                  label="Level"
-                  name="level"
-                  onChange={handleChange}
-                >
-                  <MenuItem value="Beginner">
-                    Beginner
-                  </MenuItem>
-
-                  <MenuItem value="Intermediate">
-                    Intermediate
-                  </MenuItem>
-
-                  <MenuItem value="Advanced">
-                    Advanced
-                  </MenuItem>
-
-                </TextField>
-              </Grid>
-
-              <Grid item xs={12} md={4}>
-                <TextField
-                  fullWidth
-                  label="Tech Stack"
-                  name="techstack"
-                  onChange={handleChange}
-                />
-              </Grid>
-
-            </Grid>
-
-            <Button
-              variant="contained"
-              size="large"
-              sx={{
-                mt: 3,
-                borderRadius: 3,
-              }}
-              onClick={generateQuestions}
-              disabled={loading}
-            >
-              {loading ? "Generating..." : "Generate Questions"}
-            </Button>
-
-          </CardContent>
-        </Card>
-
-        {/* Questions */}
-        {questions.length > 0 && (
-          <Card
-            sx={{
-              mt: 5,
-              borderRadius: 4,
-            }}
-          >
-            <CardContent>
-
-              <Typography
-                variant="h5"
-                fontWeight="bold"
-                mb={3}
-              >
-                Interview Questions
-              </Typography>
-
-              <List>
-
-                {questions.map((question, index) => (
-                  <Box key={index} sx={{ mb: 4 }}>
-
-                    <ListItem>
-
-                      <Typography fontWeight="bold">
-                        {index + 1}. {question}
-                      </Typography>
-
-                    </ListItem>
-
-                    <TextField
-                      multiline
-                      rows={4}
-                      fullWidth
-                      placeholder="Write your answer here..."
-                      value={answers[index] || ""}
-                      onChange={(e) =>
-                        handleAnswerChange(
-                          index,
-                          e.target.value
-                        )
-                      }
-                    />
-
-                    <Button
-                      variant="contained"
-                      sx={{ mt: 2 }}
-                      onClick={() =>
-                        evaluateAnswer(
-                          question,
-                          answers[index],
-                          index
-                        )
-                      }
-                    >
-                      Evaluate Answer
-                    </Button>
-
-                    {/* Results */}
-                    {results[index] && (
-                      <Card
-                        sx={{
-                          mt: 2,
-                          background: "#f9fafb",
-                          borderRadius: 3,
-                        }}
-                      >
-                        <CardContent>
-
-                          <Chip
-                            label={`Score: ${results[index].score}/10`}
-                            color="primary"
-                            sx={{ mb: 2 }}
-                          />
-
-                          <Typography>
-                            {results[index].feedback}
-                          </Typography>
-
-                        </CardContent>
-                      </Card>
-                    )}
-
-                    <Divider sx={{ mt: 4 }} />
-
-                  </Box>
-                ))}
-
-              </List>
-
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Chart */}
-        <Card
-          sx={{
-            mt: 5,
-            mb: 5,
-            borderRadius: 4,
-          }}
-        >
-          <CardContent>
-
-            <Typography
-              variant="h5"
-              fontWeight="bold"
-              mb={3}
-            >
-              Score Trends
-            </Typography>
-
-            <ResponsiveContainer
-              width="100%"
-              height={300}
-            >
-              <LineChart data={chartData}>
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-
-                <Line
-                  type="monotone"
-                  dataKey="score"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-
-          </CardContent>
-        </Card>
-
-      </Container>
-    </Box>
-  );
+
+
+
+
+const generateQuestions=async()=>{
+
+
+try{
+
+
+setLoading(true);
+
+
+const res=await API.post(
+
+"/ai/questions",
+
+formData
+
+);
+
+
+setQuestions(res.data.questions);
+
+
+navigate(
+`/interview/${res.data.interview.id}`,
+{
+state:{
+questions:res.data.questions
 }
+}
+);
+
+
+}
+
+catch(error){
+
+
+console.log(error);
+
+
+alert("Failed to generate questions");
+
+
+}
+
+finally{
+
+setLoading(false);
+
+}
+
+
+};
+
+
+
+
+
+return(
+
+
+<Box
+
+sx={{
+
+minHeight:"100vh",
+
+background:"#020617",
+
+color:"white",
+
+p:3
+
+}}
+
+>
+
+
+
+{/* Header */}
+
+
+<Box
+
+sx={{
+
+mb:5
+
+}}
+
+>
+
+
+<Typography
+
+variant="h3"
+
+fontWeight="bold"
+
+>
+
+Good Morning 👋
+
+</Typography>
+
+
+
+<Typography
+
+sx={{
+
+color:"#94a3b8",
+
+mt:1
+
+}}
+
+>
+
+Prepare yourself for your next AI powered interview
+
+</Typography>
+
+
+</Box>
+
+
+
+
+
+
+{/* Stats */}
+
+
+<Grid
+
+container
+
+spacing={3}
+
+>
+
+
+
+<Grid
+
+item
+
+xs={12}
+
+md={4}
+
+>
+
+
+<StatCard
+
+title="Total Interviews"
+
+value="12"
+
+icon={<AssignmentIcon/>}
+
+gradient="linear-gradient(135deg,#2563eb,#1e40af)"
+
+/>
+
+
+</Grid>
+
+
+
+
+
+<Grid
+
+item
+
+xs={12}
+
+md={4}
+
+>
+
+
+<StatCard
+
+title="Average Score"
+
+value="8.5/10"
+
+icon={<StarIcon/>}
+
+gradient="linear-gradient(135deg,#7c3aed,#4c1d95)"
+
+/>
+
+
+</Grid>
+
+
+
+
+
+
+<Grid
+
+item
+
+xs={12}
+
+md={4}
+
+>
+
+
+<StatCard
+
+title="Performance"
+
+value="+20%"
+
+icon={<TrendingUpIcon/>}
+
+gradient="linear-gradient(135deg,#059669,#065f46)"
+
+/>
+
+
+</Grid>
+
+
+
+</Grid>
+
+
+
+
+
+
+
+{/* Generate Interview */}
+
+
+
+<Card
+
+sx={{
+
+mt:5,
+
+borderRadius:5,
+
+background:"#0f172a",
+
+color:"white"
+
+}}
+
+>
+
+
+<CardContent
+
+sx={{
+
+p:4
+
+}}
+
+>
+
+
+
+<Box
+
+sx={{
+
+display:"flex",
+
+alignItems:"center",
+
+gap:2,
+
+mb:3
+
+}}
+
+>
+
+
+<Avatar
+
+sx={{
+
+background:"#2563eb"
+
+}}
+
+>
+
+
+<PsychologyIcon/>
+
+
+</Avatar>
+
+
+
+<Typography
+
+variant="h5"
+
+fontWeight="bold"
+
+>
+
+Create AI Interview
+
+</Typography>
+
+
+</Box>
+
+
+
+
+<Grid
+
+container
+
+spacing={3}
+
+>
+
+
+
+<Grid
+
+item
+
+xs={12}
+
+md={4}
+
+>
+
+
+<TextField
+
+
+fullWidth
+
+
+label="Role"
+
+
+name="role"
+
+
+value={formData.role}
+
+
+onChange={handleChange}
+
+
+sx={{
+
+background:"white",
+
+borderRadius:2
+
+}}
+
+
+/>
+
+
+</Grid>
+
+
+
+
+
+
+
+<Grid
+
+item
+
+xs={12}
+
+md={4}
+
+>
+
+
+<TextField
+
+
+select
+
+
+fullWidth
+
+
+label="Experience Level"
+
+
+name="level"
+
+
+value={formData.level}
+
+
+onChange={handleChange}
+
+
+sx={{
+
+background:"white",
+
+borderRadius:2
+
+}}
+
+
+>
+
+
+<MenuItem value="Beginner">
+
+Beginner
+
+</MenuItem>
+
+
+<MenuItem value="Intermediate">
+
+Intermediate
+
+</MenuItem>
+
+
+
+<MenuItem value="Advanced">
+
+Advanced
+
+</MenuItem>
+
+
+
+</TextField>
+
+
+</Grid>
+
+
+
+
+
+
+
+
+<Grid
+
+item
+
+xs={12}
+
+md={4}
+
+>
+
+
+<TextField
+
+
+fullWidth
+
+
+label="Tech Stack"
+
+
+name="techstack"
+
+
+value={formData.techstack}
+
+
+onChange={handleChange}
+
+
+sx={{
+
+background:"white",
+
+borderRadius:2
+
+}}
+
+
+/>
+
+
+</Grid>
+
+
+
+</Grid>
+
+
+
+
+
+
+<Button
+
+
+variant="contained"
+
+
+startIcon={<RocketLaunchIcon/>}
+
+
+onClick={generateQuestions}
+
+
+disabled={loading}
+
+
+sx={{
+
+mt:4,
+
+px:5,
+
+py:1.5,
+
+borderRadius:3,
+
+background:"#2563eb",
+
+fontWeight:"bold",
+
+
+"&:hover":{
+
+background:"#1d4ed8"
+
+}
+
+
+}}
+
+
+
+>
+
+
+{
+
+loading
+
+?
+
+"Generating..."
+
+:
+
+"Generate Interview"
+
+}
+
+
+
+</Button>
+
+
+
+
+
+</CardContent>
+
+
+</Card>
+
+
+
+
+
+
+
+
+{/* Questions */}
+
+
+
+{
+
+questions.length>0 &&
+
+
+<Card
+
+sx={{
+
+mt:5,
+
+borderRadius:5,
+
+background:"#0f172a",
+
+color:"white"
+
+}}
+
+>
+
+
+<CardContent>
+
+
+<Typography
+
+variant="h5"
+
+fontWeight="bold"
+
+>
+
+Generated Questions
+
+</Typography>
+
+
+
+
+{
+
+questions.map((q,index)=>(
+
+
+<Box
+
+key={index}
+
+sx={{
+
+mt:3,
+
+p:2,
+
+background:"#1e293b",
+
+borderRadius:3
+
+}}
+
+>
+
+
+<Chip
+
+label={`Question ${index+1}`}
+
+color="primary"
+
+/>
+
+
+
+<Typography
+
+mt={2}
+
+>
+
+{q}
+
+</Typography>
+
+
+
+</Box>
+
+
+
+))
+
+
+}
+
+
+
+</CardContent>
+
+
+</Card>
+
+
+}
+
+
+
+
+
+
+{/* Recent Interviews */}
+
+
+
+<Card
+
+sx={{
+
+mt:5,
+
+borderRadius:5,
+
+background:"#0f172a",
+
+color:"white"
+
+}}
+
+>
+
+
+<CardContent>
+
+
+<Typography
+
+variant="h5"
+
+fontWeight="bold"
+
+mb={3}
+
+>
+
+Recent Interviews
+
+</Typography>
+
+
+
+<Box
+
+sx={{
+
+display:"flex",
+
+justifyContent:"space-between",
+
+p:2,
+
+background:"#1e293b",
+
+borderRadius:3,
+
+mb:2
+
+}}
+
+>
+
+
+<Typography>
+
+Frontend Developer
+
+</Typography>
+
+
+<Chip
+
+label="8/10"
+
+color="success"
+
+/>
+
+
+</Box>
+
+
+
+
+
+<Box
+
+sx={{
+
+display:"flex",
+
+justifyContent:"space-between",
+
+p:2,
+
+background:"#1e293b",
+
+borderRadius:3
+
+}}
+
+>
+
+
+<Typography>
+
+Backend Developer
+
+</Typography>
+
+
+<Chip
+
+label="9/10"
+
+color="success"
+
+/>
+
+
+</Box>
+
+
+
+</CardContent>
+
+
+</Card>
+
+
+
+
+
+</Box>
+
+
+);
+
+
+}
+
+
 
 export default Dashboard;
