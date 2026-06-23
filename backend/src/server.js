@@ -12,6 +12,11 @@ app.use(cors());
 
 app.use(express.json());
 
+app.get("/", (req,res)=>{
+  res.send("AI Interview Platform Backend Running 🚀");
+});
+
+
 
 
 // Routes
@@ -47,6 +52,7 @@ app.use(
 "/api/result",
 require("./routes/resultRoutes")
 );
+
 
 
 
